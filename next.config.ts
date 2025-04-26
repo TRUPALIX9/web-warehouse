@@ -9,5 +9,3 @@ const nextConfig: NextConfig = {
     domains: ['example.com'], // Add image domains if you're fetching images from external URLs
   },
 };
-
-export default nextConfig;

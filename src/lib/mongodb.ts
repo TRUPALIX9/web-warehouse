@@ -1,36 +1,38 @@
-// src/lib/mongodb.ts
+// /lib/db.js
+import mongoose from 'mongoose';
+import type { ConnectOptions } from 'mongoose';
 
-import { MongoClient } from 'mongodb';
+const MONGODB_URI: string = process.env.MONGODB_URI as string;
 
-// Connection URI from environment variables
-const uri = process.env.MONGODB_URI || '';
+if (!MONGODB_URI) {
+  throw new Error('Please define the MONGODB_URI environment variable');
+}
 
-let cachedClient: MongoClient | null = null;
-let cachedDb: any = null;
+/**
+ * globalThis.__mongooseCache is used to cache the MongoDB connection
+ * across hot reloads in development. This prevents
+ * creating multiple connections to the database.
+ */
+declare global {
+  var __mongooseCache: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null };
+}
 
-export const connectToDatabase = async () => {
-  // If there's already a cached client and db, return them
-  if (cachedClient && cachedDb) {
-    console.log('Using cached database connection');
-    return { db: cachedDb, client: cachedClient };
+if (!globalThis.__mongooseCache) {
+  globalThis.__mongooseCache = { conn: null, promise: null };
+}
+
+const cached = globalThis.__mongooseCache;
+
+async function connectToDatabase() {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    const options: ConnectOptions = {};
+    cached.promise = mongoose.connect(MONGODB_URI, options).then((m) => m);
   }
 
-  // Otherwise, establish a new connection
-  try {
-    console.log('Establishing new database connection...');
-    const client = new MongoClient(uri);
-    await client.connect();
-    
-    // Use your MongoDB database name
-    const db = client.db('Warehouse');  // Replace 'Warehouse' with your DB name if needed
-    
-    // Cache the database and client for future reuse
-    cachedClient = client;
-    cachedDb = db;
-    
-    return { db, client };  // Return the db and client objects
-  } catch (error) {
-    console.error('Error connecting to database:', error);
-    throw new Error('Failed to connect to database');
-  }
-};
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+export default connectToDatabase;
