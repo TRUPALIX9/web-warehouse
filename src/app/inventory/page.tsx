@@ -1,12 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  MaterialReactTable,
-  type MRT_ColumnDef,
-} from 'material-react-table';
-import { Box, Chip, CircularProgress, TextField, Typography } from '@mui/material';
+import { MaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
+import { Box, Chip, TextField, Typography } from '@mui/material';
 import axios from 'axios';
+import Loading from '../components/Loader'; // <-- import your custom loader
 
 type InventoryItem = {
   _id: string;
@@ -47,24 +45,24 @@ export default function InventoryPage() {
     { accessorKey: 'sku', header: 'SKU' },
     { accessorKey: 'category', header: 'Category' },
     { accessorKey: 'quantity', header: 'Quantity' },
-    {
-      accessorKey: 'tags',
-      header: 'Tags',
-      enableSorting: false,
-      Cell: ({ cell }) => (
-        <Box display="flex" gap={1} flexWrap="wrap">
-          {cell.getValue()?.map((tag: string) => (
-            <Chip
-              key={tag}
-              label={tag}
-              size="small"
-              onClick={() => setTagFilter(tag)}
-              sx={{ cursor: 'pointer' }}
-            />
-          ))}
-        </Box>
-      ),
-    },
+    // {
+    //   accessorKey: 'tags',
+    //   header: 'Tags',
+    //   enableSorting: false,
+    //   Cell: ({ cell }) => (
+    //     <Box display="flex" gap={1} flexWrap="wrap">
+    //       {cell.getValue()?.map((tag: string) => (
+    //         <Chip
+    //           key={tag}
+    //           label={tag}
+    //           size="small"
+    //           onClick={() => setTagFilter(tag)}
+    //           sx={{ cursor: 'pointer' }}
+    //         />
+    //       ))}
+    //     </Box>
+    //   ),
+    // },
   ];
 
   return (
@@ -90,13 +88,21 @@ export default function InventoryPage() {
         />
       )}
 
-      {loading ? (
-        <CircularProgress />
-      ) : error ? (
-        <Typography color="error">{error}</Typography>
-      ) : (
-        <MaterialReactTable columns={columns} data={data} />
-      )}
+      {/* Table Area */}
+      <Box
+        className="border rounded-lg overflow-hidden shadow-md"
+        sx={{ mt: 2, p: 2 }}
+      >
+        {loading ? (
+          <div className="h-[300px] flex items-center justify-center">
+            <Loading text="Loading inventory..." size={30} />
+          </div>
+        ) : error ? (
+          <Typography color="error">{error}</Typography>
+        ) : (
+          <MaterialReactTable columns={columns} data={data} />
+        )}
+      </Box>
     </Box>
   );
 }
