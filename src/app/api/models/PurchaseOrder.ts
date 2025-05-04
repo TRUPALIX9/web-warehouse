@@ -1,5 +1,5 @@
 // /src/app/api/models/PurchaseOrder.ts
-import mongoose, { Document, Schema, Types } from 'mongoose';
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 interface OrderItem {
   item_id: Types.ObjectId;
@@ -17,18 +17,19 @@ export interface IPurchaseOrder extends Document {
 }
 
 const PurchaseOrderSchema = new Schema<IPurchaseOrder>({
-  party_id: { type: Schema.Types.ObjectId, ref: 'Party' },
+  party_id: { type: Schema.Types.ObjectId, ref: "Party" },
   isVendor: Boolean,
   order_date: Date,
   status: String,
   items: [
     {
-      item_id: { type: Schema.Types.ObjectId, ref: 'Item' },
+      item_id: { type: Schema.Types.ObjectId, ref: "Items" },
       quantity_ordered: Number,
       received_quantity: Number,
     },
   ],
-  pallets: [{ type: Schema.Types.ObjectId, ref: 'Pallet' }],
+  pallets: [{ type: Schema.Types.ObjectId, ref: "Pallet" }],
 });
 
-export default mongoose.models.PurchaseOrder || mongoose.model<IPurchaseOrder>('PurchaseOrder', PurchaseOrderSchema);
+export default mongoose.models.PurchaseOrder ||
+  mongoose.model<IPurchaseOrder>("PurchaseOrder", PurchaseOrderSchema);

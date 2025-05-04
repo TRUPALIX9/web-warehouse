@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Types } from 'mongoose';
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 interface Dimensions {
   length?: number;
@@ -14,7 +14,7 @@ interface StorageLocation {
   column_name?: string;
 }
 
-export interface IItem extends Document {
+export interface IItems extends Document {
   name: string;
   category?: string;
   sku: string;
@@ -26,7 +26,7 @@ export interface IItem extends Document {
   storage_location: StorageLocation;
 }
 
-const ItemSchema = new Schema<IItem>(
+const ItemsSchema = new Schema<IItems>(
   {
     name: { type: String, required: true, trim: true },
     category: { type: String, trim: true },
@@ -42,7 +42,11 @@ const ItemSchema = new Schema<IItem>(
       weight: Number,
     },
     storage_location: {
-      warehouse_id: { type: Schema.Types.ObjectId, ref: 'Warehouse', required: true },
+      warehouse_id: {
+        type: Schema.Types.ObjectId,
+        ref: "Warehouse",
+        required: true,
+      },
       unit_name: String,
       row_name: String,
       column_name: String,
@@ -53,4 +57,5 @@ const ItemSchema = new Schema<IItem>(
   }
 );
 
-export default mongoose.models.Item || mongoose.model<IItem>('Item', ItemSchema);
+export default mongoose.models.Items ||
+  mongoose.model<IItems>("Items", ItemsSchema);

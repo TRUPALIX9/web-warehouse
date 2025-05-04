@@ -1,20 +1,55 @@
-// /src/app/api/insights/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import PurchaseOrder from "../../api/models/PurchaseOrder";
 
 export async function GET() {
-  return NextResponse.json({
-    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-    inbound: [120, 150, 130, 170, 180],
-    outbound: [100, 140, 120, 160, 170],
-
-    vendors: ['Vendor X', 'Vendor Y', 'Vendor Z'],
-    vendorPOCounts: [10, 5, 7],
-
-    stockStatus: [70, 20, 10], // In Stock, Low Stock, Out of Stock
-
-    itemAddedMonths: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-    itemAddedCounts: [10, 15, 20, 18, 25],
-
-    poStatus: [5, 15, 2], // Pending, Received, Cancelled
+  const now = new Date();
+  const months = [...Array(6)].map((_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    return d.toLocaleString("default", { month: "short" });
   });
+
+  const pipeline: any = [
+    {
+      $match: {
+        order_date: {
+          $gte: new Date(now.getFullYear(), now.getMonth() - 5, 1),
+        },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          month: { $month: "$order_date" },
+          year: { $year: "$order_date" },
+        },
+        inbound: { $sum: { $cond: ["$isVendor", 1, 0] } },
+        outbound: { $sum: { $cond: ["$isVendor", 0, 1] } },
+      },
+    },
+    {
+      $sort: {
+        "_id.year": 1,
+        "_id.month": 1,
+      },
+    },
+  ];
+
+  const results = await PurchaseOrder.aggregate(pipeline);
+
+  const inbound = new Array(6).fill(0);
+  const outbound = new Array(6).fill(0);
+
+  results.forEach((entry) => {
+    const index = months.findIndex(
+      (m, i) =>
+        new Date(now.getFullYear(), now.getMonth() - (5 - i), 1).getMonth() ===
+        entry._id.month - 1
+    );
+    if (index !== -1) {
+      inbound[index] = entry.inbound;
+      outbound[index] = entry.outbound;
+    }
+  });
+
+  return NextResponse.json({ months, inbound, outbound });
 }

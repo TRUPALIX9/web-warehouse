@@ -1,5 +1,5 @@
-// /src/app/api/models/Pallet.ts
-import mongoose, { Document, Schema, Types } from 'mongoose';
+// models/Pallet.ts
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 interface DimensionsInches {
   length_in: number;
@@ -8,6 +8,7 @@ interface DimensionsInches {
 }
 
 export interface IPallet extends Document {
+  pallet_name: string;
   pallet_type: string;
   dimensions: DimensionsInches;
   max_weight_lb: number;
@@ -16,6 +17,7 @@ export interface IPallet extends Document {
 }
 
 const PalletSchema = new Schema<IPallet>({
+  pallet_name: { type: String, required: true },
   pallet_type: String,
   dimensions: {
     length_in: Number,
@@ -23,8 +25,9 @@ const PalletSchema = new Schema<IPallet>({
     height_in: Number,
   },
   max_weight_lb: Number,
-  stacking_items: [{ type: Schema.Types.ObjectId, ref: 'Item' }],
-  po_id: { type: Schema.Types.ObjectId, ref: 'PurchaseOrder' },
+  stacking_items: [{ type: Schema.Types.ObjectId, ref: "Items" }],
+  po_id: { type: Schema.Types.ObjectId, ref: "PurchaseOrder" },
 });
 
-export default mongoose.models.Pallet || mongoose.model<IPallet>('Pallet', PalletSchema);
+export default mongoose.models.Pallet ||
+  mongoose.model<IPallet>("Pallet", PalletSchema);

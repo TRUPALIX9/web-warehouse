@@ -1,10 +1,10 @@
 // /src/app/api/db.ts
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI as string;
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI in .env.local');
+  throw new Error("Please define the MONGODB_URI in .env.local");
 }
 
 // Avoid multiple connections during hot-reloads in dev
@@ -20,14 +20,14 @@ const connectDB = async () => {
   if (!cached.promise) {
     cached.promise = mongoose
       .connect(MONGODB_URI, {
-        dbName: 'wms',
+        dbName: "web-warehouse",
         bufferCommands: false,
       })
       .then((mongoose) => {
         return mongoose;
       })
       .catch((err) => {
-        console.error('MongoDB connection error:', err);
+        console.error("MongoDB connection error:", err);
         throw err;
       });
   }
