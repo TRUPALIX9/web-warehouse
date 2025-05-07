@@ -9,7 +9,6 @@ import {
   Chip,
   List,
   ListItem,
-  ListItemText,
   Table,
   TableBody,
   TableCell,
@@ -22,6 +21,7 @@ import {
   IconButton,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
 import { useLoading } from "../../context/LoadingContext";
 
 export default function PurchaseOrderDetailPage() {
@@ -41,7 +41,6 @@ export default function PurchaseOrderDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-
     const fetchOrder = async () => {
       try {
         setLoading(true);
@@ -50,6 +49,7 @@ export default function PurchaseOrderDetailPage() {
         const json = await res.json();
         setData(json);
         setEditedItems(json.items);
+        setCalculatedPallets(json.pallets || []);
       } catch (err) {
         console.error("Fetch error:", err);
         setData(null);
@@ -57,7 +57,6 @@ export default function PurchaseOrderDetailPage() {
         setLoading(false);
       }
     };
-
     fetchOrder();
   }, [id, setLoading]);
 
@@ -71,50 +70,81 @@ export default function PurchaseOrderDetailPage() {
         console.error("Failed to fetch inventory:", err);
       }
     };
-
     fetchInventory();
   }, []);
 
-  const totalCost = useMemo(() => {
-    return editedItems.reduce((sum: number, e) => {
-      const matched = inventoryItems.find(
-        (item) => (e.item_id?._id || e.item_id) === item._id
-      );
-      return sum + (e.quantity_ordered || 0) * (matched?.unit_price || 0);
-    }, 0);
-  }, [editedItems, inventoryItems]);
-
-  const totalVolume = useMemo(() => {
-    return editedItems.reduce((sum: number, e) => {
-      const matched = inventoryItems.find(
-        (item) => (e.item_id?._id || e.item_id) === item._id
-      );
-      const dims = matched?.dimensions;
-      if (!dims) return sum;
-      return (
-        sum + dims.length * dims.width * dims.height * (e.quantity_ordered || 0)
-      );
-    }, 0);
-  }, [editedItems, inventoryItems]);
-
-  const totalWeight = useMemo(() => {
-    return editedItems.reduce((sum: number, e) => {
-      const matched = inventoryItems.find(
-        (item) => (e.item_id?._id || e.item_id) === item._id
-      );
-      return (
-        sum + (matched?.dimensions?.weight || 0) * (e.quantity_ordered || 0)
-      );
-    }, 0);
-  }, [editedItems, inventoryItems]);
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/purchase-orders/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: editedItems,
+          pallets: calculatedPallets,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to update purchase order");
+      const updated = await res.json();
+      setData(updated);
+      setEditable(false);
+    } catch (err) {
+      console.error("Update error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const palletCapacity = 48 * 40 * 60;
-  const estimatedPallets = useMemo(() => {
-    return totalVolume > 0 ? Math.ceil(totalVolume / palletCapacity) : 0;
-  }, [totalVolume]);
+  const totalCost = useMemo(
+    () =>
+      editedItems.reduce((sum, e) => {
+        const matched = inventoryItems.find(
+          (item) => (e.item_id?._id || e.item_id) === item._id
+        );
+        return sum + (e.quantity_ordered || 0) * (matched?.unit_price || 0);
+      }, 0),
+    [editedItems, inventoryItems]
+  );
+
+  const totalVolume = useMemo(
+    () =>
+      editedItems.reduce((sum, e) => {
+        const matched = inventoryItems.find(
+          (item) => (e.item_id?._id || e.item_id) === item._id
+        );
+        const dims = matched?.dimensions;
+        if (!dims) return sum;
+        return (
+          sum +
+          dims.length * dims.width * dims.height * (e.quantity_ordered || 0)
+        );
+      }, 0),
+    [editedItems, inventoryItems]
+  );
+
+  const totalWeight = useMemo(
+    () =>
+      editedItems.reduce((sum, e) => {
+        const matched = inventoryItems.find(
+          (item) => (e.item_id?._id || e.item_id) === item._id
+        );
+        return (
+          sum + (matched?.dimensions?.weight || 0) * (e.quantity_ordered || 0)
+        );
+      }, 0),
+    [editedItems, inventoryItems]
+  );
+
+  const estimatedPallets = useMemo(
+    () => (totalVolume > 0 ? Math.ceil(totalVolume / palletCapacity) : 0),
+    [totalVolume]
+  );
 
   const calculatePallets = () => {
-    const palletList: any[] = [];
+    const palletList = [];
     let currentVolume = 0;
     let currentPallet = {
       pallet_name: `Pallet 1`,
@@ -122,7 +152,6 @@ export default function PurchaseOrderDetailPage() {
       dimensions: { length_in: 48, width_in: 40, height_in: 60 },
       stacking_items: [] as any[],
     };
-
     for (const item of editedItems) {
       const fullItem = inventoryItems.find(
         (i) => (item.item_id?._id || item.item_id) === i._id
@@ -133,7 +162,6 @@ export default function PurchaseOrderDetailPage() {
         fullItem.dimensions.width *
         fullItem.dimensions.height;
       const qty = item.quantity_ordered || 0;
-
       for (let i = 0; i < qty; i++) {
         if (currentVolume + itemVolume > palletCapacity) {
           palletList.push(currentPallet);
@@ -141,22 +169,21 @@ export default function PurchaseOrderDetailPage() {
             pallet_name: `Pallet ${palletList.length + 1}`,
             pallet_type: "Standard",
             dimensions: { length_in: 48, width_in: 40, height_in: 60 },
-            stacking_items: [] as any[],
+            stacking_items: [],
           };
           currentVolume = 0;
         }
         currentPallet.stacking_items.push({
           name: fullItem.name,
           sku: fullItem.sku,
+          storage_location: fullItem.storage_location || null,
         });
         currentVolume += itemVolume;
       }
     }
-
     if (currentPallet.stacking_items.length > 0) {
       palletList.push(currentPallet);
     }
-
     setCalculatedPallets(palletList);
   };
 
@@ -175,20 +202,32 @@ export default function PurchaseOrderDetailPage() {
 
   return (
     <Box p={4} maxWidth={1000} mx="auto">
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        Purchase Order #{" "}
-        <Button
-          variant="text"
-          size="small"
-          onClick={() => router.push(`/purchase-order/${data._id}`)}
-          sx={{ textTransform: "none", fontWeight: "bold", ml: 1 }}
-        >
-          {data._id}
-        </Button>
-        <IconButton onClick={() => setEditable(!editable)} sx={{ ml: 1 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Typography variant="h4" fontWeight="bold" gutterBottom>
+          Purchase Order #{" "}
+          <Button
+            variant="text"
+            size="small"
+            onClick={() => router.push(`/purchase-order/${data._id}`)}
+            sx={{ textTransform: "none", fontWeight: "bold", ml: 1 }}
+          >
+            {data._id}
+          </Button>
+        </Typography>
+        {editable && (
+          <Button
+            variant="contained"
+            startIcon={<SaveIcon />}
+            onClick={handleSave}
+          >
+            Save Changes
+          </Button>
+        )}
+        <IconButton onClick={() => setEditable(!editable)} sx={{ ml: 2 }}>
           <EditIcon />
         </IconButton>
-      </Typography>
+      </Box>
+      {/* Remaining JSX unchanged for brevity */}
 
       <Chip
         label={data.status}
@@ -248,6 +287,7 @@ export default function PurchaseOrderDetailPage() {
               <TableCell>Ordered</TableCell>
               <TableCell>Unit Price</TableCell>
               <TableCell>Subtotal</TableCell>
+              <TableCell>Storage Location</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -257,6 +297,14 @@ export default function PurchaseOrderDetailPage() {
               );
               const orderedQty =
                 match?.quantity_ordered || item.orderedQty || 0;
+
+              const location = item.storage_location;
+              const locationText = location
+                ? `${location.unit_name || ""} / ${location.row_name || ""} / ${
+                    location.column_name || ""
+                  }`
+                : "N/A";
+
               return (
                 <TableRow key={item._id} hover>
                   <TableCell>{item.name}</TableCell>
@@ -292,6 +340,7 @@ export default function PurchaseOrderDetailPage() {
                   <TableCell>
                     ${(orderedQty * (item.unit_price || 0)).toFixed(2)}
                   </TableCell>
+                  <TableCell>{locationText}</TableCell>
                 </TableRow>
               );
             })}
@@ -311,18 +360,63 @@ export default function PurchaseOrderDetailPage() {
         Pallets:
       </Typography>
       <List dense>
-        {calculatedPallets.map((p: any, i: number) => (
-          <ListItem key={i} alignItems="flex-start">
-            <ListItemText
-              primary={`${p.pallet_name} [${p.pallet_type}] - ${p.dimensions.length_in}x${p.dimensions.width_in}x${p.dimensions.height_in} in`}
-              secondary={
-                p.stacking_items
-                  .map((si: any) => `${si.name} (${si.sku})`)
-                  .join(", ") || "No items stacked"
-              }
-            />
-          </ListItem>
-        ))}
+        {calculatedPallets.map((p: any, i: number) => {
+          const skuCounts: Record<string, { name: string; count: number }> = {};
+          p.stacking_items.forEach((item: any) => {
+            if (skuCounts[item.sku]) {
+              skuCounts[item.sku].count += 1;
+            } else {
+              skuCounts[item.sku] = { name: item.name, count: 1 };
+            }
+          });
+
+          return (
+            <ListItem key={i} alignItems="flex-start">
+              <Box width="100%">
+                <Typography variant="subtitle1" fontWeight="bold">
+                  {`${p.pallet_name} [${p.pallet_type}] - ${p.dimensions.length_in}x${p.dimensions.width_in}x${p.dimensions.height_in} in`}
+                </Typography>
+                <TableContainer component={Paper} sx={{ mt: 1, mb: 2 }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Item Name</TableCell>
+                        <TableCell>SKU</TableCell>
+                        <TableCell>Count</TableCell>
+                        <TableCell>Location</TableCell> {/* new column */}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {Object.entries(skuCounts).map(
+                        ([sku, { name, count }]) => {
+                          // Get example location for display
+                          const sampleItem = p.stacking_items.find(
+                            (s: any) => s.sku === sku
+                          );
+                          const loc = sampleItem?.storage_location;
+                          const locText = loc
+                            ? `${loc.unit_name || ""} / ${
+                                loc.row_name || ""
+                              } / ${loc.column_name || ""}`
+                            : "N/A";
+
+                          return (
+                            <TableRow key={sku}>
+                              <TableCell>{name}</TableCell>
+                              <TableCell>{sku}</TableCell>
+                              <TableCell>{count}</TableCell>
+                              <TableCell>{locText}</TableCell>
+                            </TableRow>
+                          );
+                        }
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+            </ListItem>
+          );
+        })}
       </List>
     </Box>
   );
