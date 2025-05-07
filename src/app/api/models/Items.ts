@@ -8,7 +8,11 @@ interface Dimensions {
 }
 
 interface StorageLocation {
-  warehouse_id: Types.ObjectId; // ✅ Required
+  warehouse_id: {
+    type: mongoose.Schema.Types.ObjectId;
+    ref: "Warehouse";
+    required: false;
+  };
   unit_name?: string;
   row_name?: string;
   column_name?: string;
@@ -45,7 +49,7 @@ const ItemsSchema = new Schema<IItems>(
       warehouse_id: {
         type: Schema.Types.ObjectId,
         ref: "Warehouse",
-        required: true,
+        required: false,
       },
       unit_name: String,
       row_name: String,

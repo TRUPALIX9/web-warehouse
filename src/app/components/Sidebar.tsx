@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   Box,
   List,
@@ -13,7 +13,6 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import InsightsIcon from "@mui/icons-material/Insights";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -32,8 +31,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isHovered }) => {
       icon: <ReceiptLongIcon />,
       path: "/purchase-orders",
     },
-    // { text: 'Pallets', icon: <LocalShippingIcon />, path: '/pallets' },
-    // { text: 'Insights', icon: <InsightsIcon />, path: '/insights' },
+    {
+      text: "Site Managment",
+      icon: <LocalShippingIcon />,
+      path: "/site-managment",
+    },
   ];
 
   return (
@@ -48,11 +50,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isHovered }) => {
         top: 0,
         bgcolor: "background.paper",
         borderRight: "1px solid #e0e0e0",
-        boxShadow: "2px 0 8px rgba(0,0,0,0.08)", // slight heavier shadow
+        boxShadow: "2px 0 8px rgba(0,0,0,0.06)",
         zIndex: 1000,
+        transition: "width 300ms ease-in-out, box-shadow 300ms ease-in-out",
       }}
     >
-      {/* Logo Section */}
+      {/* Logo */}
       <Box
         sx={{
           height: 64,
@@ -63,6 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isHovered }) => {
           fontSize: 24,
           letterSpacing: 1,
           borderBottom: "1px solid #eee",
+          transition: "all 300ms ease-in-out",
         }}
       >
         {isHovered ? "Web Warehouse" : "WW"}
@@ -90,7 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isHovered }) => {
                 "&:hover": {
                   backgroundColor: "primary.light",
                 },
-                transition: "all 0.3s ease",
+                transition: "all 300ms ease-in-out",
               }}
             >
               <Tooltip title={!isHovered ? item.text : ""} placement="right">
@@ -99,8 +103,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isHovered }) => {
                     minWidth: 0,
                     mr: isHovered ? 2 : "auto",
                     justifyContent: "center",
-                    color: isActive ? "primary.main" : "inherit",
-                    transition: "color 0.3s ease",
+                    color: isActive ? "white" : "inherit",
+                    transition: "all 300ms ease-in-out",
                   }}
                 >
                   {item.icon}
@@ -113,6 +117,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isHovered }) => {
                   primaryTypographyProps={{
                     fontSize: 14,
                     fontWeight: isActive ? "bold" : "normal",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 />
               )}
@@ -131,6 +138,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isHovered }) => {
             fontSize: 12,
             color: "text.secondary",
             borderTop: "1px solid #eee",
+            transition: "opacity 300ms ease-in-out",
           }}
         >
           © 2025 Web Warehouse

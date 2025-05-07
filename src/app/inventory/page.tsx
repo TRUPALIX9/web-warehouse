@@ -90,18 +90,20 @@ export default function InventoryPage() {
     {
       header: "Dimensions (in inch)",
       accessorFn: (row) =>
-        `${row.dimensions.length} x ${row.dimensions.width} x ${row.dimensions.height}`,
+        `${row.dimensions?.length || 0} x ${row.dimensions?.width || 0} x ${
+          row.dimensions?.height || 0
+        }`,
     },
     {
       header: "Weight (lb)",
-      accessorFn: (row) => row.dimensions.weight,
+      accessorFn: (row) => row.dimensions?.weight,
     },
     {
       header: "Storage Location",
       accessorFn: (row) =>
-        `${row.storage_location.unit_name} / ${
-          row.storage_location.row_name
-        } / ${row.storage_location.column_name || "N/A"}`,
+        `${row.storage_location?.unit_name || "N/A"} / ${
+          row.storage_location?.row_name || "N/A"
+        } / ${row.storage_location?.column_name || "N/A"}`,
     },
     {
       accessorKey: "tags",
