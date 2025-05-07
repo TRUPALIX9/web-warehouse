@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Box,
   Chip,
@@ -8,10 +9,11 @@ import {
   Typography,
   Paper,
   Tooltip,
+  Button,
 } from "@mui/material";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
 import axios from "axios";
-import Loading from "../components/Loader";
+import { useLoading } from "../context/LoadingContext";
 
 // Extended Inventory Item Type
 type InventoryItem = {
@@ -44,7 +46,7 @@ export default function InventoryPage() {
   const [filteredData, setFilteredData] = useState<InventoryItem[]>([]);
   const [search, setSearch] = useState("");
   const [tagFilter, setTagFilter] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { setLoading } = useLoading();
   const [error, setError] = useState("");
 
   // Fetch inventory
@@ -78,7 +80,27 @@ export default function InventoryPage() {
 
   const columns: MRT_ColumnDef<InventoryItem>[] = [
     { accessorKey: "name", header: "Name" },
-    { accessorKey: "sku", header: "SKU" },
+    {
+      accessorKey: "sku",
+      header: "SKU",
+      Cell: ({ row }) => (
+        <Tooltip title="View Item Details">
+          <Link href={`/items/${row.original._id}`} passHref>
+            <Box
+              component="span"
+              sx={{
+                color: "primary.main",
+                cursor: "pointer",
+                textDecoration: "underline",
+                "&:hover": { opacity: 0.8 },
+              }}
+            >
+              {row.original.sku}
+            </Box>
+          </Link>
+        </Tooltip>
+      ),
+    },
     { accessorKey: "category", header: "Category" },
     { accessorKey: "quantity", header: "Quantity" },
     { accessorKey: "hold_units", header: "Hold Units" },
@@ -127,29 +149,25 @@ export default function InventoryPage() {
         );
       },
     },
-    // {
-    //   header: "Created At",
-    //   accessorFn: (row) =>
-    //     new Date(row.createdAt).toLocaleString("en-US", {
-    //       dateStyle: "medium",
-    //       timeStyle: "short",
-    //     }),
-    // },
-    // {
-    //   header: "Updated At",
-    //   accessorFn: (row) =>
-    //     new Date(row.updatedAt).toLocaleString("en-US", {
-    //       dateStyle: "medium",
-    //       timeStyle: "short",
-    //     }),
-    // },
   ];
 
   return (
     <Box p={4}>
-      <Typography variant="h4" fontWeight="bold" mb={3}>
-        Inventory
-      </Typography>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+      >
+        <Typography variant="h4" fontWeight="bold">
+          Inventory
+        </Typography>
+        <Link href="/items/new" passHref>
+          <Button variant="contained" color="primary">
+            Add New Item
+          </Button>
+        </Link>
+      </Box>
 
       <Paper sx={{ p: 2, mb: 2 }}>
         <TextField
@@ -169,24 +187,11 @@ export default function InventoryPage() {
         />
       )}
 
-      {loading ? (
-        <Box
-          height={300}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Loading text="Loading inventory..." size={30} />
-        </Box>
-      ) : error ? (
-        <Typography color="error">{error}</Typography>
-      ) : (
-        <MaterialReactTable
-          columns={columns}
-          data={filteredData}
-          enablePagination
-        />
-      )}
+      <MaterialReactTable
+        columns={columns}
+        data={filteredData}
+        enablePagination
+      />
     </Box>
   );
 }

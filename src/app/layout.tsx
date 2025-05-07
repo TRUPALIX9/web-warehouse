@@ -15,6 +15,13 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <title>Web Warehouse</title>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/logo.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Smart Inventory System" />
+      </head>
       <body className="bg-gray-100 min-h-screen overflow-hidden">
         {/* Header */}
         <Header />

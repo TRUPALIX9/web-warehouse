@@ -10,9 +10,9 @@ export default function Header() {
     <AppBar
       position="fixed"
       sx={{
-        backgroundColor: "#6B4F31",
+        backgroundColor: "white",
         boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
-        zIndex: 1201, // Higher than sidebar
+        zIndex: 1201,
       }}
     >
       <Toolbar
@@ -23,29 +23,25 @@ export default function Header() {
           alignItems: "center",
         }}
       >
-        {/* Left Side: Project Title */}
-        <Typography
-          variant="h5"
+        {/* Left Side: Logo */}
+        <img
+          src="/home.png"
+          alt="Home Logo"
           onClick={() => router.push("/")}
-          sx={{
-            color: "white",
-            fontWeight: "bold",
-            letterSpacing: "0.05em",
+          style={{
+            height: "40px",
             cursor: "pointer",
-            "&:hover": {
-              opacity: 0.8,
-            },
-            transition: "all 0.3s",
+            transition: "opacity 0.3s",
           }}
-        >
-          Web Warehouse
-        </Typography>
+          onMouseOver={(e) => (e.currentTarget.style.opacity = "0.8")}
+          onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
+        />
 
         {/* Right Side: Username */}
         <Typography
           variant="body1"
+          color="primary"
           sx={{
-            color: "white",
             fontWeight: "600",
             fontSize: "0.9rem",
           }}

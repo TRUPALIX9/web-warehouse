@@ -41,7 +41,7 @@ export default function SiteManagerPage() {
   const [expandedStates, setExpandedStates] = useState<boolean[]>([]);
   const [unassignedItems, setUnassignedItems] = useState<IItems[]>([]);
   const [assignMode, setAssignMode] = useState<string | null>(null);
-  const { loading, setLoading } = useLoading();
+  const { setLoading } = useLoading();
   const expandedRef = useRef<boolean[]>([]);
 
   useEffect(() => {

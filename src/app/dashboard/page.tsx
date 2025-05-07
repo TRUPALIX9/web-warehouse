@@ -11,6 +11,7 @@ import {
   Divider,
 } from "@mui/material";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
+import { useLoading } from "../context/LoadingContext"; // adjust path if needed
 
 // ✅ Dynamically import ApexCharts to avoid SSR crash
 const ApexCharts = dynamic(() => import("react-apexcharts"), { ssr: false });
@@ -40,16 +41,25 @@ interface InsightRow {
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [insights, setInsights] = useState<Insights | null>(null);
+  const { setLoading } = useLoading(); // ✅ Access global loading handler
 
   useEffect(() => {
-    fetch("/api/dashboard")
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/dashboard");
+        const data = await res.json();
         setStats(data.stats);
         setInsights(data.insights);
-      })
-      .catch((err) => console.error("Failed to fetch dashboard data:", err));
-  }, []);
+      } catch (err) {
+        console.error("Failed to fetch dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [setLoading]);
 
   const insightTableColumns: MRT_ColumnDef<InsightRow>[] = [
     { accessorKey: "month", header: "Month" },

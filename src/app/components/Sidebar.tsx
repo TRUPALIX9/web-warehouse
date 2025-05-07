@@ -13,6 +13,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import PeopleIcon from "@mui/icons-material/People"; // optional icon
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -35,6 +36,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isHovered }) => {
       text: "Site Managment",
       icon: <LocalShippingIcon />,
       path: "/site-managment",
+    },
+    {
+      text: "Vendors / Suppliers",
+      path: "/party", // links to your party.tsx page
+      icon: <PeopleIcon />, // optional, or use LocalShippingIcon
     },
   ];
 
