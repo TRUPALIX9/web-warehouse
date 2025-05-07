@@ -1,11 +1,11 @@
 // seed.ts - Populate MongoDB WMS with unique entries using faker
 import mongoose from "mongoose";
 import { faker } from "@faker-js/faker";
-import Warehouse from "./src/app/api/models/Warehouse";
-import Items from "./src/app/api/models/Items";
-import Party from "./src/app/api/models/Party";
-import PurchaseOrder from "./src/app/api/models/PurchaseOrder";
-import Pallet from "./src/app/api/models/Pallet";
+import Warehouse from "./src/app/models/Warehouse";
+import Items from "./src/app/models/Items";
+import Party from "./src/app/models/Party";
+import PurchaseOrder from "./src/app/models/PurchaseOrder";
+import Pallet from "./src/app/models/Pallet";
 
 const MONGODB_URI =
   "mongodb+srv://projectUser:ConnectTrueDbProject@project-playground.nfrzo.mongodb.net/web-warehouse?retryWrites=true&w=majority";
@@ -60,18 +60,27 @@ async function seed() {
       })),
     ]);
 
-    const units = Array.from({ length: 2 }, (_, u) => ({
-      unit_id: faker.string.uuid(),
-      unit_name: `Unit-${u + 1}`,
-      rows: Array.from({ length: 5 }, (_, r) => ({
-        row_id: faker.string.uuid(),
-        row_name: `Row-${String.fromCharCode(65 + r)}`,
-        columns: Array.from({ length: 8 }, (_, c) => ({
-          column_id: faker.string.uuid(),
-          column_name: `Col-${c + 1}`,
-        })),
-      })),
-    }));
+    const units = Array.from({ length: 2 }, (_, u) => {
+      const unit_id = faker.string.uuid();
+      return {
+        unit_id,
+        unit_name: `Unit-${u + 1}`,
+        rows: Array.from({ length: 5 }, (_, r) => {
+          const row_id = faker.string.uuid();
+          return {
+            row_id,
+            row_name: `Row-${String.fromCharCode(65 + r)}`,
+            columns: Array.from({ length: 8 }, (_, c) => {
+              const column_id = faker.string.uuid();
+              return {
+                column_id,
+                column_name: `Col-${c + 1}`,
+              };
+            }),
+          };
+        }),
+      };
+    });
 
     const warehouse = await Warehouse.create({
       name: `Warehouse ${faker.company.name()}`,
@@ -81,17 +90,29 @@ async function seed() {
       units,
     });
 
-    const flatColumnLocations = units.flatMap((unit) =>
-      unit.rows.flatMap((row) =>
-        row.columns.map((col) => ({
-          unit_name: unit.unit_name,
-          row_name: row.row_name,
-          column_name: col.column_name,
-        }))
-      )
-    );
+    const flatColumnLocations: any[] = [];
+    units.forEach((unit) => {
+      const unit_id = unit.unit_id;
+      const unit_name = unit.unit_name;
 
-    const Itemss = await Items.insertMany(
+      unit.rows.forEach((row) => {
+        const row_id = row.row_id;
+        const row_name = row.row_name;
+
+        row.columns.forEach((col) => {
+          flatColumnLocations.push({
+            unit_id,
+            unit_name,
+            row_id,
+            row_name,
+            column_id: col.column_id,
+            column_name: col.column_name,
+          });
+        });
+      });
+    });
+
+    const items = await Items.insertMany(
       flatColumnLocations.slice(0, 20).map((loc) => ({
         name: faker.commerce.productName(),
         category: faker.commerce.department(),
@@ -109,12 +130,15 @@ async function seed() {
           height: randomInt(1, 20),
           weight: randomInt(1, 10),
         },
-        storage_location: {
-          warehouse_id: warehouse._id,
-          unit_name: loc.unit_name,
-          row_name: loc.row_name,
-          column_name: loc.column_name,
-        },
+        // storage_location: {
+        //   warehouse_id: warehouse._id,
+        //   unit_id: loc.unit_id,
+        //   unit_name: loc.unit_name,
+        //   row_id: loc.row_id,
+        //   row_name: loc.row_name,
+        //   column_id: loc.column_id,
+        //   column_name: loc.column_name,
+        // },
         createdAt: new Date(),
         updatedAt: new Date(),
       }))
@@ -125,8 +149,8 @@ async function seed() {
       isVendor: true,
       order_date: new Date(),
       status: "Open",
-      Items: Itemss.map((Items) => ({
-        Items_id: Items._id,
+      Items: items.map((item) => ({
+        Items_id: item._id,
         quantity_ordered: randomInt(5, 20),
         received_quantity: randomInt(0, 5),
       })),
@@ -141,7 +165,7 @@ async function seed() {
         width: 40,
         height: 60,
         weight: 2000,
-      }, // Typical North American GMA pallet
+      },
       {
         name: "Home Depot",
         type: "Heavy Duty",
@@ -149,7 +173,7 @@ async function seed() {
         width: 48,
         height: 72,
         weight: 2500,
-      }, // Oversized square
+      },
       {
         name: "International",
         type: "Euro",
@@ -157,7 +181,7 @@ async function seed() {
         width: 31.5,
         height: 59.06,
         weight: 1500,
-      }, // EUR-pallet
+      },
       {
         name: "Europe",
         type: "Industrial",
@@ -165,11 +189,11 @@ async function seed() {
         width: 39.37,
         height: 63,
         weight: 2200,
-      }, // ISO standard pallet
+      },
     ];
 
     const pallets = await Pallet.insertMany(
-      Itemss.map((Items, index) => {
+      items.map((item, index) => {
         const spec = palletSpecs[index % palletSpecs.length];
         return {
           pallet_name: spec.name,
@@ -180,7 +204,7 @@ async function seed() {
             height_in: spec.height,
           },
           max_weight_lb: spec.weight,
-          stacking_Items: [Items._id],
+          stacking_Items: [item._id],
           po_id: po._id,
         };
       })
@@ -193,7 +217,7 @@ async function seed() {
     console.log(`\n✅ Seeded:
   - ${parties.length} Parties (Vendors + Customers)
   - 1 Warehouse with 2 Units, 5 Rows each, and 8 Columns
-  - ${Itemss.length} Itemss
+  - ${items.length} Items
   - 1 Purchase Order
   - ${pallets.length} Pallets
   `);

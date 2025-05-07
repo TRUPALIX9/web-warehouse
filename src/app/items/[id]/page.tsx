@@ -25,28 +25,25 @@ export default function ItemDetailPage() {
     quantity: 0,
     unit_price: 0,
     hold_units: 0,
-    dimensions: {
-      length: 1,
-      width: 1,
-      height: 1,
-    },
+    dimensions: { length: 1, width: 1, height: 1 },
   });
   const [editing, setEditing] = useState(!id);
 
   useEffect(() => {
-    if (!id) return;
-    const fetchItem = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`/api/items/${id}`);
-        setForm(res.data);
+        if (id) {
+          const res = await axios.get(`/api/items/${id}`);
+          setForm(res.data);
+        }
       } catch (err) {
         console.error("Fetch failed:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchItem();
+    fetchData();
   }, [id, setLoading]);
 
   const handleChange = (field: string, value: any) => {
@@ -72,8 +69,9 @@ export default function ItemDetailPage() {
       if (id) {
         await axios.put(`/api/items/${id}`, form);
       } else {
-        await axios.post("/api/items", form);
-        router.push("/items");
+        const created = await axios.post("/api/items", form);
+        const newId = created.data._id;
+        router.push(`/items/${newId}`);
       }
       setEditing(false);
     } catch (err) {
@@ -88,7 +86,6 @@ export default function ItemDetailPage() {
   return (
     <Box p={4}>
       <Grid container spacing={4}>
-        {/* Left: 3D Preview and Dimensions */}
         <Grid item xs={12} md={5}>
           <Box mb={2}>
             <Typography variant="h5" fontWeight={600} gutterBottom>
@@ -127,7 +124,6 @@ export default function ItemDetailPage() {
           </Grid>
         </Grid>
 
-        {/* Right: Item Information */}
         <Grid item xs={12} md={7}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" fontWeight={500} gutterBottom>
@@ -192,7 +188,6 @@ export default function ItemDetailPage() {
               </Grid>
             </Grid>
 
-            {/* Buttons */}
             <Box mt={4} display="flex" justifyContent="flex-end" gap={2}>
               {editing ? (
                 <>

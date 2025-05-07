@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "../db";
-import Warehouse from "../models/Warehouse";
-import Items from "../models/Items";
+import Warehouse from "../../models/Warehouse";
+import Items from "../../models/Items";
 import { Types } from "mongoose";
 import { IWarehouse } from "../../../types/warehouse";
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "../../db";
-import Items from "../../models/Items";
+import Items from "../../../models/Items";
 
 export async function PUT(req: NextRequest) {
   await connectDB();
@@ -14,9 +14,9 @@ export async function PUT(req: NextRequest) {
       {
         $unset: {
           "storage_location.warehouse_id": "",
-          "storage_location.unit_name": "",
-          "storage_location.row_name": "",
-          "storage_location.column_name": "",
+          "storage_location.unit_id": "",
+          "storage_location.row_id": "",
+          "storage_location.column_id": "",
         },
       }
     );

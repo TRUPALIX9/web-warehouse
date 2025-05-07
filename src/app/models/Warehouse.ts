@@ -31,7 +31,7 @@ const ColumnSchema = new Schema<Column>(
   {
     column_id: String,
     column_name: String,
-    assigned_item_id: { type: Schema.Types.ObjectId, ref: "Item" },
+    assigned_item_id: { type: Schema.Types.ObjectId, ref: "Items" },
   },
   { _id: false }
 );

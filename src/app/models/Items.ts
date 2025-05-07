@@ -13,9 +13,12 @@ interface StorageLocation {
     ref: "Warehouse";
     required: false;
   };
-  unit_name?: string;
-  row_name?: string;
-  column_name?: string;
+  unit_id: string;
+  unit_name: string;
+  row_id: string;
+  row_name: string;
+  column_id: string;
+  column_name: string;
 }
 
 export interface IItems extends Document {
@@ -51,8 +54,11 @@ const ItemsSchema = new Schema<IItems>(
         ref: "Warehouse",
         required: false,
       },
+      unit_id: String,
       unit_name: String,
+      row_id: String,
       row_name: String,
+      column_id: String,
       column_name: String,
     },
   },

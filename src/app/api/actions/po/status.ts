@@ -1,8 +1,8 @@
 // /pages/api/actions/po/status.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import connectToDatabase from "../../db";
-import PurchaseOrder from "../../models/PurchaseOrder";
-import Items from "../../models/Items";
+import PurchaseOrder from "../../../models/PurchaseOrder";
+import Items from "../../../models/Items";
 
 export default async function handler(
   req: NextApiRequest,

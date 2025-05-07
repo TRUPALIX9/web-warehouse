@@ -1,8 +1,8 @@
 import connectDB from "../db";
-import PurchaseOrder from "../../../app/api/models/PurchaseOrder";
-import "../../../app/api/models/Party";
-import "../../../app/api/models/Items";
-import "../../../app/api/models/Pallet";
+import PurchaseOrder from "../../models/PurchaseOrder";
+import "../../models/Party";
+import "../../models/Items";
+import "../../models/Pallet";
 import { NextResponse } from "next/server";
 
 export async function GET() {

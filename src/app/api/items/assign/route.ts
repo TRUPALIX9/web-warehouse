@@ -1,35 +1,43 @@
+// /api/items/assign.ts
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "../../db";
-import Items from "../../models/Items";
-import Warehouse from "../../models/Warehouse";
+import Items from "../../../models/Items";
+import Warehouse from "../../../models/Warehouse";
 
 export async function PUT(req: NextRequest) {
-  await connectDB();
-  const { itemId, warehouse_id, unit_name, row_name, column_name } =
-    await req.json();
-
   try {
-    // 1. Update the item’s storage location
-    const item = await Items.findByIdAndUpdate(
+    await connectDB();
+    const {
       itemId,
-      {
-        storage_location: {
-          warehouse_id,
-          unit_name,
-          row_name,
-          column_name,
-        },
-      },
-      { new: true }
-    );
+      warehouse_id,
+      unit_id,
+      unit_name,
+      row_id,
+      row_name,
+      column_id,
+      column_name,
+    } = await req.json();
 
-    // 2. Update the warehouse to assign the item in the correct column
+    // Update item with full storage location
+    await Items.findByIdAndUpdate(itemId, {
+      storage_location: {
+        warehouse_id,
+        unit_id,
+        unit_name,
+        row_id,
+        row_name,
+        column_id,
+        column_name,
+      },
+    });
+
+    // Assign item in the warehouse layout
     await Warehouse.updateOne(
       {
         _id: warehouse_id,
-        "units.unit_name": unit_name,
-        "units.rows.row_name": row_name,
-        "units.rows.columns.column_name": column_name,
+        "units.unit_id": unit_id,
+        "units.rows.row_id": row_id,
+        "units.rows.columns.column_id": column_id,
       },
       {
         $set: {
@@ -38,19 +46,16 @@ export async function PUT(req: NextRequest) {
       },
       {
         arrayFilters: [
-          { "u.unit_name": unit_name },
-          { "r.row_name": row_name },
-          { "c.column_name": column_name },
+          { "u.unit_id": unit_id },
+          { "r.row_id": row_id },
+          { "c.column_id": column_id },
         ],
       }
     );
 
-    return NextResponse.json({ message: "Item assigned", item });
-  } catch (error) {
-    console.error("Assignment Error:", error);
-    return NextResponse.json(
-      { message: "Error assigning item" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("PUT /api/items/assign error:", err);
+    return NextResponse.json({ error: "Assignment failed" }, { status: 500 });
   }
 }

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import connectDB from "../../../app/api/db"; // ✅ matches your file structure
 
-import Items from "../models/Items";
-import PurchaseOrder from "../models/PurchaseOrder";
-import Pallet from "../models/Pallet";
-import Vendor from "../models/Vendor";
-import Warehouse from "../models/Warehouse";
+import Items from "../../models/Items";
+import PurchaseOrder from "../../models/PurchaseOrder";
+import Pallet from "../../models/Pallet";
+import Vendor from "../../models/Vendor";
+import Warehouse from "../../models/Warehouse";
 
 export async function GET() {
   try {

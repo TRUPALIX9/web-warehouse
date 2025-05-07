@@ -1,7 +1,7 @@
 // /pages/api/actions/item/hold.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import connectToDatabase from "../db";
-import Items from "../models/Items";
+import Items from "../../models/Items";
 
 export default async function handler(
   req: NextApiRequest,

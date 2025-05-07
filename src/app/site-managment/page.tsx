@@ -65,7 +65,7 @@ export default function SiteManagerPage() {
 
   const fetchItems = async () => {
     setLoading(true);
-    const res = await axios.get("/api/items/unassigned");
+    const res = await axios.get("/api/items/unassignedItems");
     setUnassignedItems(res.data);
     setLoading(false);
   };
@@ -121,25 +121,31 @@ export default function SiteManagerPage() {
 
   const handleAssignItem = async (
     warehouse_id: string,
-    unit_name: string,
-    row_name: string,
-    column_name: string,
-    itemId: string | null
+    unit_id: string,
+    row_id: string,
+    column_id: string,
+    itemId: string | null,
+    unit_name?: string,
+    row_name?: string,
+    column_name?: string
   ) => {
     setLoading(true);
     await axios.put("/api/items/unassign", {
       warehouse_id,
-      unit_name,
-      row_name,
-      column_name,
+      unit_id,
+      row_id,
+      column_id,
     });
 
     if (itemId && itemId !== "") {
       await axios.put("/api/items/assign", {
         itemId,
         warehouse_id,
+        unit_id,
         unit_name,
+        row_id,
         row_name,
+        column_id,
         column_name,
       });
     }
@@ -158,10 +164,13 @@ export default function SiteManagerPage() {
             if (nextItem) {
               await handleAssignItem(
                 warehouse._id ?? "",
+                unit.unit_id,
+                row.row_id,
+                col.column_id,
+                nextItem._id?.toString() ?? null,
                 unit.unit_name,
                 row.row_name,
-                col.column_name,
-                nextItem._id?.toString() ?? null
+                col.column_name
               );
             }
           }
@@ -214,10 +223,13 @@ export default function SiteManagerPage() {
                           onChange={(e) =>
                             handleAssignItem(
                               wh._id ?? "",
+                              unit.unit_id,
+                              row.row_id,
+                              col.column_id,
+                              e.target.value || null,
                               unit.unit_name,
                               row.row_name,
-                              col.column_name,
-                              e.target.value || null
+                              col.column_name
                             )
                           }
                           sx={{ minWidth: 180 }}

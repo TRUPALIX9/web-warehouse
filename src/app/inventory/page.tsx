@@ -15,25 +15,24 @@ import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
 import axios from "axios";
 import { useLoading } from "../context/LoadingContext";
 
-// Extended Inventory Item Type
 type InventoryItem = {
   _id: string;
   name: string;
   sku: string;
-  category: string;
+  category?: string;
   quantity: number;
   hold_units: number;
   unit_price: number;
   dimensions: {
-    length: number;
-    width: number;
-    height: number;
-    weight: number;
+    length?: number;
+    width?: number;
+    height?: number;
+    weight?: number;
   };
   storage_location: {
-    warehouse_id: string;
-    unit_name: string;
-    row_name: string;
+    warehouse_name?: string;
+    unit_name?: string;
+    row_name?: string;
     column_name?: string;
   };
   tags: string[];
@@ -47,9 +46,7 @@ export default function InventoryPage() {
   const [search, setSearch] = useState("");
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const { setLoading } = useLoading();
-  const [error, setError] = useState("");
 
-  // Fetch inventory
   useEffect(() => {
     setLoading(true);
     axios
@@ -57,11 +54,10 @@ export default function InventoryPage() {
       .then((res) => {
         setData(res.data.items || []);
       })
-      .catch((err) => setError(err.message || "Something went wrong."))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  // Filter data
   useEffect(() => {
     let result = [...data];
     if (search.trim()) {
@@ -110,7 +106,7 @@ export default function InventoryPage() {
       Cell: ({ cell }) => `$${cell.getValue<number>().toFixed(2)}`,
     },
     {
-      header: "Dimensions (in inch)",
+      header: "Dimensions (L x W x H in)",
       accessorFn: (row) =>
         `${row.dimensions?.length || 0} x ${row.dimensions?.width || 0} x ${
           row.dimensions?.height || 0
@@ -118,14 +114,17 @@ export default function InventoryPage() {
     },
     {
       header: "Weight (lb)",
-      accessorFn: (row) => row.dimensions?.weight,
+      accessorFn: (row) => row.dimensions?.weight || "N/A",
     },
     {
       header: "Storage Location",
-      accessorFn: (row) =>
-        `${row.storage_location?.unit_name || "N/A"} / ${
-          row.storage_location?.row_name || "N/A"
-        } / ${row.storage_location?.column_name || "N/A"}`,
+      accessorFn: (row) => {
+        const { warehouse_name, unit_name, row_name, column_name } =
+          row.storage_location || {};
+        return `${warehouse_name || "N/A"} / ${unit_name || "N/A"} / ${
+          row_name || "N/A"
+        } / ${column_name || "N/A"}`;
+      },
     },
     {
       accessorKey: "tags",

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import Party from "../../models/Party";
+import Party from "../../../models/Party";
 import connectDB from "../../db";
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {

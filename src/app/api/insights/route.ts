@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import PurchaseOrder from "../../api/models/PurchaseOrder";
+import PurchaseOrder from "../../models/PurchaseOrder";
 
 export async function GET() {
   const now = new Date();

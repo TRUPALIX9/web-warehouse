@@ -1,62 +1,54 @@
-// src/app/api/items/unassign/route.ts
+// /api/items/unassign.ts
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "../../db";
-import Items from "../../models/Items";
-import Warehouse from "../../models/Warehouse";
-import mongoose from "mongoose";
+import Items from "../../../models/Items";
+import Warehouse from "../../../models/Warehouse";
 
 export async function PUT(req: NextRequest) {
   try {
     await connectDB();
-    const { warehouse_id, unit_name, row_name, column_name } = await req.json();
+    const { warehouse_id, unit_id, row_id, column_id } = await req.json();
 
-    if (!warehouse_id || !unit_name || !row_name || !column_name) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    // Unassign item in warehouse layout
+    const warehouse = await Warehouse.findOne({
+      _id: warehouse_id,
+    });
+
+    const unit = warehouse.units.find((u: any) => u.unit_id === unit_id);
+    const row = unit?.rows.find((r: any) => r.row_id === row_id);
+    const col = row?.columns.find((c: any) => c.column_id === column_id);
+    const assignedItemId = col?.assigned_item_id;
+
+    if (assignedItemId) {
+      await Items.findByIdAndUpdate(assignedItemId, {
+        $unset: { storage_location: "" },
+      });
     }
 
-    const warehouseObjectId = new mongoose.Types.ObjectId(warehouse_id);
-
-    // Step 1: Remove assigned_item_id from warehouse column
-    const warehouse = await Warehouse.findOne({ _id: warehouseObjectId });
-    if (!warehouse) throw new Error("Warehouse not found");
-
-    for (const unit of warehouse.units) {
-      if (unit.unit_name === unit_name) {
-        for (const row of unit.rows) {
-          if (row.row_name === row_name) {
-            for (const column of row.columns) {
-              if (column.column_name === column_name) {
-                column.assigned_item_id = null;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    await warehouse.save();
-
-    // Step 2: Unassign item from Items collection
-    await Items.updateOne(
+    await Warehouse.updateOne(
       {
-        "storage_location.warehouse_id": warehouseObjectId,
-        "storage_location.unit_name": unit_name,
-        "storage_location.row_name": row_name,
-        "storage_location.column_name": column_name,
+        _id: warehouse_id,
+        "units.unit_id": unit_id,
+        "units.rows.row_id": row_id,
+        "units.rows.columns.column_id": column_id,
       },
       {
         $unset: {
-          storage_location: "",
+          "units.$[u].rows.$[r].columns.$[c].assigned_item_id": "",
         },
+      },
+      {
+        arrayFilters: [
+          { "u.unit_id": unit_id },
+          { "r.row_id": row_id },
+          { "c.column_id": column_id },
+        ],
       }
     );
 
-    return NextResponse.json({ message: "Unassigned successfully" });
+    return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("Unassign route error:", err);
-    return NextResponse.json(
-      { error: "Failed to unassign item" },
-      { status: 500 }
-    );
+    console.error("PUT /api/items/unassign error:", err);
+    return NextResponse.json({ error: "Unassignment failed" }, { status: 500 });
   }
 }
