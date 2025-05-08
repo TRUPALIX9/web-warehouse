@@ -47,3 +47,24 @@ export async function PUT(
     );
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  await connectDB();
+
+  try {
+    const deleted = await Items.findByIdAndDelete(params.id);
+    if (!deleted) {
+      return NextResponse.json({ message: "Item not found" }, { status: 404 });
+    }
+    return NextResponse.json({ message: "Item deleted" }, { status: 200 });
+  } catch (err) {
+    console.error("DELETE /api/items/[id] error:", err);
+    return NextResponse.json(
+      { message: "Server error", error: err },
+      { status: 500 }
+    );
+  }
+}

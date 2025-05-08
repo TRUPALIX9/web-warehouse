@@ -19,9 +19,14 @@ import {
   TextField,
   Button,
   IconButton,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogActions,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useLoading } from "../../context/LoadingContext";
 
 export default function PurchaseOrderDetailPage() {
@@ -38,6 +43,7 @@ export default function PurchaseOrderDetailPage() {
   const [editable, setEditable] = useState(false);
   const [editedItems, setEditedItems] = useState<any[]>([]);
   const [calculatedPallets, setCalculatedPallets] = useState<any[]>([]);
+  const [confirmDialog, setConfirmDialog] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -143,6 +149,26 @@ export default function PurchaseOrderDetailPage() {
     [totalVolume]
   );
 
+  const handleMarkComplete = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/purchase-orders/${id}/complete`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: editedItems }),
+      });
+      if (!res.ok) throw new Error("Failed to complete PO");
+      const updated = await res.json();
+      setData(updated);
+      setEditable(false);
+    } catch (err) {
+      console.error("Complete PO error:", err);
+    } finally {
+      setLoading(false);
+      setConfirmDialog(false);
+    }
+  };
+
   const calculatePallets = () => {
     const palletList = [];
     let currentVolume = 0;
@@ -208,7 +234,7 @@ export default function PurchaseOrderDetailPage() {
           <Button
             variant="text"
             size="small"
-            onClick={() => router.push(`/purchase-order/${data._id}`)}
+            onClick={() => router.push(`/purchase-orders/${data._id}`)}
             sx={{ textTransform: "none", fontWeight: "bold", ml: 1 }}
           >
             {data._id}
@@ -223,12 +249,37 @@ export default function PurchaseOrderDetailPage() {
             Save Changes
           </Button>
         )}
+        <Button
+          variant="outlined"
+          color="success"
+          startIcon={<CheckCircleIcon />}
+          onClick={handleMarkComplete}
+        >
+          Mark as Complete
+        </Button>
         <IconButton onClick={() => setEditable(!editable)} sx={{ ml: 2 }}>
           <EditIcon />
         </IconButton>
       </Box>
       {/* Remaining JSX unchanged for brevity */}
 
+      <Dialog open={confirmDialog} onClose={() => setConfirmDialog(false)}>
+        <DialogTitle>Confirm Completion</DialogTitle>
+        <DialogContent>
+          Are you sure you want to mark this PO as completed? This will deduct
+          inventory quantities.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialog(false)}>Cancel</Button>
+          <Button
+            onClick={handleMarkComplete}
+            variant="contained"
+            color="success"
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Chip
         label={data.status}
         color={data.status === "Open" ? "success" : "default"}
@@ -268,7 +319,7 @@ export default function PurchaseOrderDetailPage() {
       <Typography variant="h6" gutterBottom>
         Items:
       </Typography>
-
+      {/* 
       <TextField
         placeholder="Search item by name or SKU"
         value={searchQuery}
@@ -276,7 +327,7 @@ export default function PurchaseOrderDetailPage() {
         fullWidth
         size="small"
         sx={{ mb: 2 }}
-      />
+      /> */}
 
       <TableContainer component={Paper} sx={{ mb: 3 }}>
         <Table size="small">

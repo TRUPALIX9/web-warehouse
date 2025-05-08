@@ -99,7 +99,7 @@ export default function InventoryPage() {
     },
     { accessorKey: "category", header: "Category" },
     { accessorKey: "quantity", header: "Quantity" },
-    { accessorKey: "hold_units", header: "Hold Units" },
+    // { accessorKey: "hold_units", header: "Hold Units" },
     {
       accessorKey: "unit_price",
       header: "Unit Price",

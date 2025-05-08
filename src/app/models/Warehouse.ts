@@ -1,66 +1,85 @@
-// /src/app/api/models/Warehouse.ts
-import mongoose, { Document, Schema, Types } from "mongoose";
+import mongoose, { Schema, Document, Model } from "mongoose";
 
-interface Column {
-  column_id: string;
-  column_name: string;
-  assigned_item_id?: Types.ObjectId;
+// Interfaces
+export interface IColumn {
+  column_id?: string;
+  column_name?: string;
+  assigned_item_id?: string | null;
+  item_info?: {
+    name?: string;
+    sku?: string;
+  };
 }
 
-interface Row {
-  row_id: string;
-  row_name: string;
-  columns: Column[];
+export interface IRow {
+  row_id?: string;
+  row_name?: string;
+  columns?: IColumn[];
 }
 
-interface Unit {
-  unit_id: string;
-  unit_name: string;
-  rows: Row[];
+export interface IUnit {
+  unit_id?: string;
+  unit_name?: string;
+  rows?: IRow[];
 }
 
-export interface IWarehouse extends Document {
-  name: string;
-  address: string;
-  location: string;
-  tags: string[];
-  units: Unit[];
+export interface IWarehouse {
+  name?: string;
+  address?: string;
+  location?: string;
+  tags?: string[];
+  units?: IUnit[];
 }
 
-const ColumnSchema = new Schema<Column>(
+// Mongoose Sub-Schemas
+const ColumnSchema = new Schema<IColumn>(
   {
-    column_id: String,
-    column_name: String,
-    assigned_item_id: { type: Schema.Types.ObjectId, ref: "Items" },
+    column_id: { type: String },
+    column_name: { type: String },
+    assigned_item_id: { type: String, default: null },
+    item_info: {
+      name: { type: String },
+      sku: { type: String },
+    },
   },
   { _id: false }
 );
 
-const RowSchema = new Schema<Row>(
+const RowSchema = new Schema<IRow>(
   {
-    row_id: String,
-    row_name: String,
-    columns: [ColumnSchema],
+    row_id: { type: String },
+    row_name: { type: String },
+    columns: { type: [ColumnSchema] },
   },
   { _id: false }
 );
 
-const UnitSchema = new Schema<Unit>(
+const UnitSchema = new Schema<IUnit>(
   {
-    unit_id: String,
-    unit_name: String,
-    rows: [RowSchema],
+    unit_id: { type: String },
+    unit_name: { type: String },
+    rows: { type: [RowSchema] },
   },
   { _id: false }
 );
 
-const WarehouseSchema = new Schema<IWarehouse>({
-  name: String,
-  address: String,
-  location: String,
-  tags: [String],
-  units: [UnitSchema],
-});
+const WarehouseSchema = new Schema<IWarehouse>(
+  {
+    name: { type: String },
+    address: { type: String },
+    location: { type: String },
+    tags: { type: [String] },
+    units: { type: [UnitSchema] },
+  },
+  { timestamps: true }
+);
 
-export default mongoose.models.Warehouse ||
-  mongoose.model<IWarehouse>("Warehouse", WarehouseSchema);
+// Document interface
+export interface IWarehouseDocument extends IWarehouse, Document {}
+
+// Model
+const WarehouseModel =
+  mongoose.models.Warehouse ||
+  mongoose.model<IWarehouseDocument>("Warehouse", WarehouseSchema);
+
+export default WarehouseModel;

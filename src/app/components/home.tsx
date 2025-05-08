@@ -1,5 +1,4 @@
-import StatsCard from './StatsCard'
-import InventoryTable from './InventoryTable'
+import StatsCard from "./StatsCard";
 
 export default function Home() {
   return (
@@ -9,7 +8,6 @@ export default function Home() {
         <StatsCard title="Out of Stock" value="24" />
         <StatsCard title="Orders Pending" value="12" />
       </div>
-      <InventoryTable />
     </div>
-  )
+  );
 }

@@ -66,7 +66,6 @@ export default function PurchaseOrdersPage() {
   const [incomingData, setIncomingData] = useState<PurchaseOrder[]>([]);
   const [outgoingData, setOutgoingData] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(false);
-
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editData, setEditData] = useState<PurchaseOrder | null>(null);
 
@@ -102,12 +101,6 @@ export default function PurchaseOrdersPage() {
         id: "partyName",
         header: "Party Name",
       },
-      // {
-      //   accessorFn: (row) =>
-      //     row.isVendor ? "Vendor (Outgoing)" : "Supplier (Incoming)",
-      //   id: "type",
-      //   header: "Type",
-      // },
       {
         accessorKey: "status",
         header: "Status",
@@ -129,11 +122,6 @@ export default function PurchaseOrdersPage() {
         id: "itemsCount",
         header: "Total Items",
       },
-      // {
-      //   accessorFn: (row) => row.pallets.length,
-      //   id: "palletsCount",
-      //   header: "Pallets",
-      // },
     ],
     []
   );
@@ -171,6 +159,17 @@ export default function PurchaseOrdersPage() {
         enableRowActions
         renderRowActions={({ row }) => (
           <Box display="flex" gap="0.5rem">
+            {/* <Tooltip title="Edit">
+              <IconButton
+                color="primary"
+                onClick={() => {
+                  setEditData(row.original);
+                  setDialogOpen(true);
+                }}
+              >
+                <EditIcon />
+              </IconButton>
+            </Tooltip> */}
             <Tooltip title="Delete">
               <IconButton color="error" onClick={() => handleDelete(row)}>
                 <DeleteIcon />

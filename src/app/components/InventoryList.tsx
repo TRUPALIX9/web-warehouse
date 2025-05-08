@@ -1,17 +1,25 @@
 // src/app/components/InventoryList.tsx
-"use client"
-import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { InventoryItem } from '../../types/types';  // Import the type
+"use client";
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
+import { InventoryItem } from "../../types/types"; // Import the type
 
 const InventoryList = () => {
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);  // Type the inventory state
+  const [inventory, setInventory] = useState<InventoryItem[]>([]); // Type the inventory state
 
   useEffect(() => {
     async function fetchInventory() {
-      const response = await fetch('/api/inventory');
-      const data: InventoryItem[] = await response.json();  // Type the response data
-     console.log(data);
+      const response = await fetch("/api/inventory");
+      const data: InventoryItem[] = await response.json(); // Type the response data
+      console.log(data);
       setInventory(data || []);
     }
     fetchInventory();

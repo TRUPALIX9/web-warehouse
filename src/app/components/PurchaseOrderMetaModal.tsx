@@ -68,7 +68,14 @@ export default function PurchaseOrderMetaModal({
   }, []);
 
   useEffect(() => {
-    if (initialData) setForm(initialData);
+    if (initialData) {
+      setForm({
+        isVendor: initialData.isVendor,
+        status: initialData.status,
+        order_date: initialData.order_date.slice(0, 10),
+        party_id: initialData.party_id,
+      });
+    }
   }, [initialData]);
 
   const partyOptions = parties.filter((p) => p.isVendor === form.isVendor);
@@ -141,7 +148,6 @@ export default function PurchaseOrderMetaModal({
           variant="contained"
           onClick={() => {
             onSave(form);
-            onClose();
           }}
         >
           Save

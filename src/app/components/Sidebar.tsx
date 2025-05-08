@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isHovered }) => {
   const pathname = usePathname();
 
   const menuItems = [
-    { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
+    { text: "Dashboard", icon: <DashboardIcon />, path: "/" },
     { text: "Inventory", icon: <InventoryIcon />, path: "/inventory" },
     {
       text: "Purchase Orders",
