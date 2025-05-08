@@ -340,7 +340,7 @@ export default function SiteManagerPage() {
                     }
                   />
                 }
-                label="Assign Mode"
+                label="Assign"
               />
               <IconButton onClick={() => toggleExpand(index)}>
                 {expandedStates[index] ? <ExpandLess /> : <ExpandMore />}

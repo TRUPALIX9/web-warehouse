@@ -161,6 +161,7 @@ export default function PurchaseOrderDetailPage() {
       const updated = await res.json();
       setData(updated);
       setEditable(false);
+      router.push(`/purchase-orders`);
     } catch (err) {
       console.error("Complete PO error:", err);
     } finally {

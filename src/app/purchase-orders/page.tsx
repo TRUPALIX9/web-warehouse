@@ -120,7 +120,7 @@ export default function PurchaseOrdersPage() {
       {
         accessorFn: (row) => row.items.length,
         id: "itemsCount",
-        header: "Total Items",
+        header: "Total Unique Items",
       },
     ],
     []

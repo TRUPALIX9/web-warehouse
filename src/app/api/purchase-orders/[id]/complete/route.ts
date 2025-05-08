@@ -13,12 +13,10 @@ export async function PUT(
     const { items } = await req.json();
     const id = params.id;
 
-    // Fetch the PO and confirm existence
     const po = await PurchaseOrder.findById(id).populate("party_id");
     if (!po)
       return NextResponse.json({ message: "PO not found" }, { status: 404 });
 
-    // Adjust item quantities based on PO direction
     for (const entry of items) {
       const item = await Items.findById(entry.item_id);
       if (!item) continue;
@@ -26,17 +24,14 @@ export async function PUT(
       const delta = entry.quantity_ordered || 0;
 
       if (po.party_id?.isVendor) {
-        // Vendor PO — Outgoing → subtract stock
         item.quantity = Math.max(0, item.quantity - delta);
       } else {
-        // Supplier PO — Incoming → add stock
         item.quantity += delta;
       }
 
       await item.save();
     }
 
-    // Update PO status
     po.status = "Completed";
     await po.save();
 
