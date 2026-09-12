@@ -29,7 +29,7 @@ export default function RootLayout({
 
         {/* Flex Row: Sidebar + Main Content (pt-16 clears the 64px AppBar) */}
         <div className="flex pt-16">
-          {/* Sidebar: expands on hover or keyboard focus and overlays the page */}
+          {/* Sidebar: expands on hover or keyboard focus and pushes the page over */}
           <div
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -42,8 +42,8 @@ export default function RootLayout({
           {/* Main Content with Loader Context; the page ground comes from globals.css */}
           <main
             id="main-content"
-            className="flex-1 h-[calc(100vh-64px)] overflow-y-auto"
-            style={{ marginLeft: 50 }}
+            className="flex-1 h-[calc(100vh-64px)] overflow-y-auto transition-[margin] duration-300"
+            style={{ marginLeft: isHovered ? 250 : 50 }}
           >
             <LoadingProvider>
               <GlobalLoader />
