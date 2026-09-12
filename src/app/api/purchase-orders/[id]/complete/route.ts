@@ -12,16 +12,23 @@ export async function PUT(
   try {
     const { id } = await params;
 
-    const po = await PurchaseOrder.findById(id).populate("party_id");
-    if (!po)
-      return NextResponse.json({ message: "PO not found" }, { status: 404 });
+    // Completing twice would move the stock twice. Claim the PO atomically
+    // (only a PO that is not yet Completed matches), so two concurrent
+    // requests cannot both pass the check and both apply the stock change.
+    const po = await PurchaseOrder.findOneAndUpdate(
+      { _id: id, status: { $ne: "Completed" } },
+      { $set: { status: "Completed" } },
+      { new: true }
+    ).populate("party_id");
 
-    // Completing twice would move the stock twice.
-    if (po.status === "Completed") {
-      return NextResponse.json(
-        { message: "PO is already completed" },
-        { status: 409 }
-      );
+    if (!po) {
+      const exists = await PurchaseOrder.exists({ _id: id });
+      return exists
+        ? NextResponse.json(
+            { message: "PO is already completed" },
+            { status: 409 }
+          )
+        : NextResponse.json({ message: "PO not found" }, { status: 404 });
     }
 
     // Vendor POs ship stock out; supplier POs bring it in.
@@ -42,9 +49,6 @@ export async function PUT(
 
       await item.save();
     }
-
-    po.status = "Completed";
-    await po.save();
 
     return NextResponse.json(po);
   } catch (err) {
