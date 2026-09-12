@@ -176,6 +176,6 @@ web-warehouse/
   <a href="https://github.com/TRUPALIX9">GitHub</a>
 </p>
 
-Thanks to Piyu for the early page setup commit.
+Thanks to Piyu for an early setup commit that added the first API route handlers, the Mongoose models and the demo seed script.
 
 This project is for educational and demonstration use. Contact the author for commercial licensing.
