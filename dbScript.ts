@@ -1,4 +1,5 @@
 // seed.ts - Populate MongoDB WMS with unique entries using faker
+import fs from "fs";
 import mongoose from "mongoose";
 import { faker } from "@faker-js/faker";
 import Warehouse from "./src/app/models/Warehouse";
@@ -6,8 +7,39 @@ import Items from "./src/app/models/Items";
 import Party from "./src/app/models/Party";
 import PurchaseOrder from "./src/app/models/PurchaseOrder";
 
-const MONGODB_URI =
-  "mongodb+srv://projectUser:ConnectTrueDbProject@project-playground.nfrzo.mongodb.net/web-warehouse?retryWrites=true&w=majority";
+// The connection string comes from the environment (or .env.local / .env),
+// never from this file. See .env.example.
+function loadEnvFile(file: string) {
+  if (!fs.existsSync(file)) return;
+  for (const line of fs.readFileSync(file, "utf8").split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);
+    if (!m || process.env[m[1]] !== undefined) continue;
+    process.env[m[1]] = m[2].replace(/^(['"])(.*)\1$/, "$2");
+  }
+}
+loadEnvFile(".env.local");
+loadEnvFile(".env");
+
+const MONGODB_URI = process.env.MONGODB_URI;
+const DB_NAME = "web-warehouse"; // same database the app uses (src/app/api/db.ts)
+
+if (!MONGODB_URI) {
+  console.error(
+    "MONGODB_URI is not set. Add it to .env.local (see .env.example) or export it."
+  );
+  process.exit(1);
+}
+
+// Seeding deletes every Warehouse, Item, Party and PurchaseOrder document first.
+// Refuse to run unless the caller explicitly confirms that.
+if (!process.argv.includes("--confirm-wipe")) {
+  const host = MONGODB_URI.replace(/^mongodb(\+srv)?:\/\/([^@]*@)?/, "").split(/[/?]/)[0];
+  console.error(
+    `Refusing to seed: this deletes ALL warehouses, items, parties and purchase orders in the "${DB_NAME}" database on ${host}.\n` +
+      "Re-run with --confirm-wipe if that is what you want."
+  );
+  process.exit(1);
+}
 
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -15,7 +47,7 @@ function randomInt(min: number, max: number): number {
 
 async function seed() {
   try {
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(MONGODB_URI as string, { dbName: DB_NAME });
     console.log("✅ Connected to MongoDB");
 
     await Promise.all([
@@ -181,7 +213,7 @@ async function seed() {
     }
 
     console.log(
-      "\n✅ Seeded: \n  - 6 Parties\n  - 1 Warehouse with 3 Units, 3 Rows, 3 Columns and assigned item info\n  - 50 Items\n  - 10 Purchase Orders\n"
+      "\n✅ Seeded: \n  - 6 Parties\n  - 1 Warehouse with 3 Units, 3 Rows, 3 Columns and assigned item info\n  - 27 Items\n  - 10 Purchase Orders\n"
     );
     await mongoose.disconnect();
     console.log("🔌 MongoDB disconnected.");
