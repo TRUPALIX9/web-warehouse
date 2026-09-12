@@ -22,7 +22,8 @@ export async function GET(req: NextRequest) {
       });
 
     // Split on the PO's own flag so a PO whose party was deleted still shows.
-    const isVendorPO = (po: any) => po.isVendor ?? po.party_id?.isVendor;
+    const isVendorPO = (po: (typeof orders)[number]) =>
+      po.isVendor ?? po.party_id?.isVendor;
     const incoming = orders.filter((po) => isVendorPO(po) === false);
     const outgoing = orders.filter((po) => isVendorPO(po) === true);
 
