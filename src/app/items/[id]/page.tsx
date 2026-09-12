@@ -203,7 +203,7 @@ export default function ItemDetailPage() {
                   <Button
                     variant="outlined"
                     onClick={() =>
-                      id ? setEditing(false) : router.push("/items")
+                      id ? setEditing(false) : router.push("/inventory")
                     }
                   >
                     Cancel
