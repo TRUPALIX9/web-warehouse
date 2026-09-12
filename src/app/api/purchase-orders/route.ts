@@ -51,40 +51,4 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ✅ DELETE: Remove a PO
-export async function DELETE(
-  req: Request,
-  context: { params: { id: string } }
-) {
-  try {
-    await connectDB();
-    const id = context.params.id;
-    await PurchaseOrder.findByIdAndDelete(id);
-    return NextResponse.json({ message: "Deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting PO:", error);
-    return NextResponse.json(
-      { message: "Failed to delete purchase order" },
-      { status: 500 }
-    );
-  }
-}
-
-// ✅ PUT: Update PO
-export async function PUT(req: Request, context: { params: { id: string } }) {
-  try {
-    await connectDB();
-    const id = context.params.id;
-    const body = await req.json();
-    const updated = await PurchaseOrder.findByIdAndUpdate(id, body, {
-      new: true,
-    });
-    return NextResponse.json(updated);
-  } catch (error) {
-    console.error("Error updating PO:", error);
-    return NextResponse.json(
-      { message: "Failed to update purchase order" },
-      { status: 500 }
-    );
-  }
-}
+// DELETE and PUT for a single PO live in ./[id]/route.ts

@@ -71,3 +71,29 @@ export async function PUT(
     );
   }
 }
+
+// DELETE: remove a PO
+export async function DELETE(
+  _: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  await connectDB();
+
+  try {
+    const { id } = await params;
+    const deleted = await PurchaseOrder.findByIdAndDelete(id);
+    if (!deleted) {
+      return NextResponse.json(
+        { message: "Purchase order not found" },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json({ message: "Deleted successfully" });
+  } catch (error) {
+    console.error("DELETE /purchase-orders/[id] error:", error);
+    return NextResponse.json(
+      { message: "Failed to delete purchase order" },
+      { status: 500 }
+    );
+  }
+}
