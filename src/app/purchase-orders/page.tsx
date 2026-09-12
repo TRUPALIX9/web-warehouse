@@ -222,6 +222,7 @@ export default function PurchaseOrdersPage() {
 
       <Fab
         color="primary"
+        aria-label="New purchase order"
         onClick={() => {
           setEditData(null);
           setDialogOpen(true);

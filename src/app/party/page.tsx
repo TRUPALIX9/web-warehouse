@@ -128,10 +128,16 @@ export default function PartyPage() {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  <IconButton onClick={() => handleEdit(party)}>
+                  <IconButton
+                    onClick={() => handleEdit(party)}
+                    aria-label={`Edit ${party.name}`}
+                  >
                     <Edit fontSize="small" />
                   </IconButton>
-                  <IconButton onClick={() => setDeleteTarget(party)}>
+                  <IconButton
+                    onClick={() => setDeleteTarget(party)}
+                    aria-label={`Delete ${party.name}`}
+                  >
                     <Delete fontSize="small" />
                   </IconButton>
                 </TableCell>

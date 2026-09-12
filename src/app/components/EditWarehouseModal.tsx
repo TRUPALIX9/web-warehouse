@@ -277,7 +277,11 @@ const EditWarehouseModal: React.FC<EditWarehouseModalProps> = ({
                     fullWidth
                     onChange={(e) => handleUnitChange(i, e.target.value)}
                   />
-                  <IconButton color="error" onClick={() => handleRemoveUnit(i)}>
+                  <IconButton
+                    color="error"
+                    onClick={() => handleRemoveUnit(i)}
+                    aria-label={`Remove unit ${unit.unit_name}`}
+                  >
                     <Delete />
                   </IconButton>
                 </Box>
@@ -321,6 +325,7 @@ const EditWarehouseModal: React.FC<EditWarehouseModalProps> = ({
                         <IconButton
                           color="error"
                           onClick={() => handleRemoveRow(i, j)}
+                          aria-label={`Remove row ${row.row_name}`}
                         >
                           <Delete />
                         </IconButton>
@@ -348,6 +353,7 @@ const EditWarehouseModal: React.FC<EditWarehouseModalProps> = ({
                             <IconButton
                               color="error"
                               onClick={() => handleRemoveColumn(i, j, k)}
+                              aria-label={`Remove column ${col.column_name}`}
                             >
                               <Delete />
                             </IconButton>

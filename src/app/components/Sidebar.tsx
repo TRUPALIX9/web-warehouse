@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isHovered }) => {
       path: "/purchase-orders",
     },
     {
-      text: "Site Managment",
+      text: "Site Management",
       icon: <LocalShippingIcon />,
       path: "/site-managment",
     },
@@ -88,6 +88,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isHovered }) => {
               key={item.text}
               component={Link}
               href={item.path}
+              aria-label={item.text}
+              aria-current={isActive ? "page" : undefined}
               disableRipple
               sx={{
                 justifyContent: isHovered ? "initial" : "center",

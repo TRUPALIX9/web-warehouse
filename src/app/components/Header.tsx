@@ -1,11 +1,9 @@
 "use client";
 
 import { AppBar, Toolbar, Typography } from "@mui/material";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Header() {
-  const router = useRouter();
-
   return (
     <AppBar
       position="fixed"
@@ -23,19 +21,20 @@ export default function Header() {
           alignItems: "center",
         }}
       >
-        {/* Left Side: Logo */}
-        <img
-          src="/home.png"
-          alt="Home Logo"
-          onClick={() => router.push("/")}
-          style={{
-            height: "40px",
-            cursor: "pointer",
-            transition: "opacity 0.3s",
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.opacity = "0.8")}
-          onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
-        />
+        {/* Left Side: Logo (a real link, so it is keyboard reachable) */}
+        <Link href="/" aria-label="Web Warehouse home">
+          <img
+            src="/home.png"
+            alt="Web Warehouse"
+            style={{
+              height: "40px",
+              cursor: "pointer",
+              transition: "opacity 0.3s",
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.opacity = "0.8")}
+            onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
+          />
+        </Link>
 
         {/* Right Side: Username */}
         <Typography
