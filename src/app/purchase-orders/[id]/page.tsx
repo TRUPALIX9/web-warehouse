@@ -152,12 +152,18 @@ export default function PurchaseOrderDetailPage() {
   const handleMarkComplete = async () => {
     try {
       setLoading(true);
+      // The server applies the quantities saved on the PO.
       const res = await fetch(`/api/purchase-orders/${id}/complete`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: editedItems }),
       });
-      if (!res.ok) throw new Error("Failed to complete PO");
+      if (!res.ok) {
+        alert(
+          res.status === 409
+            ? "This purchase order is already completed."
+            : "Could not complete this purchase order."
+        );
+        throw new Error("Failed to complete PO");
+      }
       const updated = await res.json();
       setData(updated);
       setEditable(false);
@@ -250,25 +256,34 @@ export default function PurchaseOrderDetailPage() {
             Save Changes
           </Button>
         )}
-        <Button
-          variant="outlined"
-          color="success"
-          startIcon={<CheckCircleIcon />}
-          onClick={handleMarkComplete}
+        {data.status !== "Completed" && (
+          <Button
+            variant="outlined"
+            color="success"
+            startIcon={<CheckCircleIcon />}
+            onClick={() => setConfirmDialog(true)}
+            disabled={editable}
+          >
+            Mark as Complete
+          </Button>
+        )}
+        <IconButton
+          onClick={() => setEditable(!editable)}
+          sx={{ ml: 2 }}
+          aria-label={editable ? "Stop editing" : "Edit purchase order"}
         >
-          Mark as Complete
-        </Button>
-        <IconButton onClick={() => setEditable(!editable)} sx={{ ml: 2 }}>
           <EditIcon />
         </IconButton>
       </Box>
-      {/* Remaining JSX unchanged for brevity */}
 
       <Dialog open={confirmDialog} onClose={() => setConfirmDialog(false)}>
         <DialogTitle>Confirm Completion</DialogTitle>
         <DialogContent>
-          Are you sure you want to mark this PO as completed? This will deduct
-          inventory quantities.
+          Are you sure you want to mark this PO as completed? This will{" "}
+          {data.isVendor
+            ? "deduct the ordered quantities from inventory"
+            : "add the ordered quantities to inventory"}{" "}
+          using the saved order. This cannot be undone.
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDialog(false)}>Cancel</Button>

@@ -88,8 +88,25 @@ export default function SiteManagerPage() {
     setEditOpen(true);
   };
 
-  const handleDelete = async (id?: string) => {
+  const handleDelete = async (wh: IWarehouse) => {
+    const id = wh._id?.toString();
     if (!id) return;
+    const assigned = (wh.units ?? []).reduce(
+      (n, unit) =>
+        n +
+        (unit.rows ?? []).reduce(
+          (m, row) =>
+            m + (row.columns ?? []).filter((c) => c.assigned_item_id).length,
+          0
+        ),
+      0
+    );
+    if (
+      !confirm(
+        `Delete warehouse "${wh.name}"? ${assigned} assigned item(s) will become unassigned.`
+      )
+    )
+      return;
     setLoading(true);
     await axios.delete(`/api/warehouse/${id}`);
     await axios.put("/api/items/remove-assignments", { warehouse_id: id });
@@ -298,7 +315,7 @@ export default function SiteManagerPage() {
         pt={2}
       >
         <Typography variant="h4" fontWeight={600} color="primary.dark">
-          <Inventory2 sx={{ mr: 1 }} /> Site Managment
+          <Inventory2 sx={{ mr: 1 }} /> Site Management
         </Typography>
         <Box display="flex" gap={2}>
           <Button variant="outlined" onClick={() => toggleAll(true)}>
@@ -342,15 +359,24 @@ export default function SiteManagerPage() {
                 }
                 label="Assign"
               />
-              <IconButton onClick={() => toggleExpand(index)}>
+              <IconButton
+                onClick={() => toggleExpand(index)}
+                aria-label={`${expandedStates[index] ? "Collapse" : "Expand"} warehouse ${wh.name}`}
+                aria-expanded={!!expandedStates[index]}
+              >
                 {expandedStates[index] ? <ExpandLess /> : <ExpandMore />}
               </IconButton>
-              <IconButton onClick={() => handleEdit(wh)} color="primary">
+              <IconButton
+                onClick={() => handleEdit(wh)}
+                color="primary"
+                aria-label={`Edit warehouse ${wh.name}`}
+              >
                 <Edit />
               </IconButton>
               <IconButton
                 color="error"
-                onClick={() => handleDelete(wh._id?.toString())}
+                onClick={() => handleDelete(wh)}
+                aria-label={`Delete warehouse ${wh.name}`}
               >
                 <Delete />
               </IconButton>

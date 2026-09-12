@@ -14,3 +14,7 @@ logs
 .env.development.local
 .env.production.local
 .env.test.local
+!.env.example
+
+# macOS
+.DS_Store

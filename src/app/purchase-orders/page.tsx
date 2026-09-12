@@ -129,9 +129,13 @@ export default function PurchaseOrdersPage() {
   const handleDelete = async (row: MRT_Row<PurchaseOrder>) => {
     if (!confirm("Delete this order?")) return;
 
-    await fetch(`/api/purchase-orders/${row.original._id}`, {
+    const res = await fetch(`/api/purchase-orders/${row.original._id}`, {
       method: "DELETE",
     });
+    if (!res.ok) {
+      alert("Could not delete this order. Please try again.");
+      return;
+    }
 
     fetchOrders();
   };
@@ -218,6 +222,7 @@ export default function PurchaseOrdersPage() {
 
       <Fab
         color="primary"
+        aria-label="New purchase order"
         onClick={() => {
           setEditData(null);
           setDialogOpen(true);
