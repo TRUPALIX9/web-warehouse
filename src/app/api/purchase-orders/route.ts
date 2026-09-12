@@ -21,8 +21,10 @@ export async function GET(req: NextRequest) {
         },
       });
 
-    const incoming = orders.filter((po) => po.party_id?.isVendor === false);
-    const outgoing = orders.filter((po) => po.party_id?.isVendor === true);
+    // Split on the PO's own flag so a PO whose party was deleted still shows.
+    const isVendorPO = (po: any) => po.isVendor ?? po.party_id?.isVendor;
+    const incoming = orders.filter((po) => isVendorPO(po) === false);
+    const outgoing = orders.filter((po) => isVendorPO(po) === true);
 
     return NextResponse.json({ incoming, outgoing });
   } catch (error) {

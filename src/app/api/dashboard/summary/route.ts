@@ -15,7 +15,10 @@ export async function GET() {
   const totalItems = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
   const totalPOs = pos.length;
   const openPOs = pos.filter((p) => p.status === "Open").length;
-  const closedPOs = pos.filter((p) => p.status === "Closed").length;
+  // The app's statuses are Open / In Progress / Completed / Cancelled.
+  const closedPOs = pos.filter(
+    (p) => p.status === "Completed" || p.status === "Cancelled"
+  ).length;
 
   const categories: Record<string, number> = {};
   items.forEach((item) => {
