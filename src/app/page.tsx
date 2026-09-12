@@ -3,7 +3,14 @@
 
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { Box, Grid, Paper, Typography, CircularProgress } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Grid,
+  Paper,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 import { useLoading } from "../app/context/LoadingContext";
 
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
@@ -23,6 +30,7 @@ interface Summary {
 
 export default function HomePage() {
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [error, setError] = useState(false);
   const { loading, setLoading } = useLoading();
 
   useEffect(() => {
@@ -30,10 +38,12 @@ export default function HomePage() {
       try {
         setLoading(true);
         const res = await fetch("/api/dashboard/summary");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setSummary(data);
       } catch (err) {
         console.error("Failed to fetch dashboard summary:", err);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -41,6 +51,16 @@ export default function HomePage() {
 
     fetchSummary();
   }, [setLoading]);
+
+  if (error)
+    return (
+      <Box p={4}>
+        <Alert severity="error">
+          Could not load dashboard data. Check that the server can reach
+          MongoDB (MONGODB_URI).
+        </Alert>
+      </Box>
+    );
 
   if (loading || !summary) return <></>;
 
